@@ -37,13 +37,47 @@ blogsRouter.get("/", (req, res, next) => {
 })
 
 //get a blog by id
-// blogsRouter.get("/:id", (req, res, next) => {
-//     try {
-        
-//     } catch (error) {
-        
-//     }
-// })
+blogsRouter.get("/:blogId", (req, res, next) => {
+    try {
+        const blog = getBlogs()
+        const getBlogById = blog.find(b => b.id === req.params.blogId)
+        res.send(getBlogById)
+    } catch (error) {
+        next(error)
+    }
+})
+
+// delete blog
+blogsRouter.delete("/:blogId", (req, res, next) => {
+    try {
+        const blogs = getBlogs()
+        const remainingBlogs = blogs.filter(b => b.id !== req.params.blogId)
+        writeBlogs(remainingBlogs)
+
+        res.status(204).send()
+    } catch (error) {
+        next(error)
+    }
+})
+
+// edit blog
+blogsRouter.put("/:blogId", (req, res, next) => {
+    try {
+        const blogs = getBlogs()
+        const index = blogs.findIndex(b => b.id === req.params.blogId)
+        const blogToEdit = blogs[index]
+        const editedFields = req.body
+
+        const editedBlog = { ...blogToEdit, editedFields, updated: new Date() }
+        blogs[index] = editedBlog
+        writeBlogs(blogs)
+
+        res.send(editedBlog)
+    } catch (error) {
+        next(error)
+    }
+})
+
 
 
 export default blogsRouter
