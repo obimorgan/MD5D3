@@ -4,6 +4,8 @@ import { fileURLToPath } from "url"
 import { dirname, join } from "path"
 import uniqid from "uniqid"
 import createHttpError from "http-errors"
+import { validationResult } from "express-validator"
+import { blogsValidation } from "./blogsValidation.js"
 
 const blogsRouter = express.Router()
 
@@ -13,15 +15,21 @@ const getBlogs = () => JSON.parse(fs.readFileSync(blogsJSONPath))
 const writeBlogs = content => fs.writeFileSync(blogsJSONPath, JSON.stringify(content)) 
 
 //Post a blog
-blogsRouter.post("/", async (req, res, next) => {
+blogsRouter.post("/", blogsValidation, (req, res, next) => {
     try {
-        
-        const newBlog = { ...req.body, ceatedAt: new Date(), id: uniqid()}
-        const blog = getBlogs()
+        const errorsList = validationResult(req)
 
-        blog.push(newBlog)
-        writeBlogs(blog)
-        res.status(201).send({id: newBlog.id})
+        if(!errorsList.isEmpty()) {
+            next(createHttpError(400, "Error occured in the request body", {errorsList}))
+        }else {
+            const newBlog = { ...req.body, ceatedAt: new Date(), id: uniqid()}
+            const blog = getBlogs()
+    
+            blog.push(newBlog)
+            writeBlogs(blog)
+            res.status(201).send({id: newBlog.id})
+        }
+
     } catch (error) {
         next(error)
     }
@@ -31,7 +39,6 @@ blogsRouter.post("/", async (req, res, next) => {
 blogsRouter.get("/", (req, res, next) => {
     try {
         const blog = getBlogs()
-
         res.send({blog})
     } catch (error) {
         next(error)
@@ -43,7 +50,14 @@ blogsRouter.get("/:blogId", (req, res, next) => {
     try {
         const blog = getBlogs()
         const getBlogById = blog.find(b => b.id === req.params.blogId)
-        res.send(getBlogById)
+        if(blog) {
+            res.send(getBlogById)
+        }else {
+            next(createHttpError(404, `Error has occured in getting the blog with this ID: ${req.params.blogId}`))
+        }
+        
+        
+        
     } catch (error) {
         next(error)
     }
