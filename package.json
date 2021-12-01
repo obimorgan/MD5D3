@@ -1,0 +1,28 @@
+{
+  "name": "md5d5",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/obimorgan/MD5D5.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/obimorgan/MD5D5/issues"
+  },
+  "homepage": "https://github.com/obimorgan/MD5D5#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-list-endpoints": "^6.0.0",
+    "nodemon": "^2.0.15",
+    "uniqid": "^5.4.0"
+  }
+}
