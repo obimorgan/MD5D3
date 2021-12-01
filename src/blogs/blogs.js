@@ -3,6 +3,7 @@ import fs from "fs"
 import { fileURLToPath } from "url"
 import { dirname, join } from "path"
 import uniqid from "uniqid"
+import createHttpError from "http-errors"
 
 const blogsRouter = express.Router()
 
@@ -12,8 +13,9 @@ const getBlogs = () => JSON.parse(fs.readFileSync(blogsJSONPath))
 const writeBlogs = content => fs.writeFileSync(blogsJSONPath, JSON.stringify(content)) 
 
 //Post a blog
-blogsRouter.post("/", (req, res, next) => {
+blogsRouter.post("/", async (req, res, next) => {
     try {
+        
         const newBlog = { ...req.body, ceatedAt: new Date(), id: uniqid()}
         const blog = getBlogs()
 
