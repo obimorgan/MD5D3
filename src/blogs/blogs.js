@@ -1,99 +1,108 @@
-import express from "express"
-import fs from "fs"
-import { fileURLToPath } from "url"
-import { dirname, join } from "path"
-import uniqid from "uniqid"
-import createHttpError from "http-errors"
-import { validationResult } from "express-validator"
-import { blogsValidation } from "./blogsValidation.js"
+/** @format */
 
-const blogsRouter = express.Router()
+import express from "express";
+import fs from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import uniqid from "uniqid";
+import createHttpError from "http-errors";
+import { validationResult } from "express-validator";
+import { blogsValidation } from "./blogsValidation.js";
 
-const blogsJSONPath = join(dirname(fileURLToPath(import.meta.url)), "blogs.json")
+const blogsRouter = express.Router();
 
-const getBlogs = () => JSON.parse(fs.readFileSync(blogsJSONPath))
-const writeBlogs = content => fs.writeFileSync(blogsJSONPath, JSON.stringify(content)) 
+const blogsJSONPath = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "blogs.json"
+);
+
+const getBlogs = () => JSON.parse(fs.readFileSync(blogsJSONPath));
+const writeBlogs = (content) =>
+  fs.writeFileSync(blogsJSONPath, JSON.stringify(content));
 
 //Post a blog
 blogsRouter.post("/", blogsValidation, (req, res, next) => {
-    try {
-        const errorsList = validationResult(req)
+  try {
+    const errorsList = validationResult(req);
 
-        if(!errorsList.isEmpty()) {
-            next(createHttpError(400, "Error occured in the request body", {errorsList}))
-        }else {
-            const newBlog = { ...req.body, ceatedAt: new Date(), id: uniqid()}
-            const blog = getBlogs()
-    
-            blog.push(newBlog)
-            writeBlogs(blog)
-            res.status(201).send({id: newBlog.id})
-        }
+    if (!errorsList.isEmpty()) {
+      next(
+        createHttpError(400, "Error occured in the request body", {
+          errorsList,
+        })
+      );
+    } else {
+      const newBlog = { ...req.body, ceatedAt: new Date(), id: uniqid() };
+      const blog = getBlogs();
 
-    } catch (error) {
-        next(error)
+      blog.push(newBlog);
+      writeBlogs(blog);
+      res.status(201).send({ id: newBlog.id });
     }
-})
+  } catch (error) {
+    next(error);
+  }
+});
 
 // get blogs
 blogsRouter.get("/", (req, res, next) => {
-    try {
-        const blog = getBlogs()
-        res.send({blog})
-    } catch (error) {
-        next(error)
-    }
-})
+  try {
+    const blog = getBlogs();
+    res.send({ blog });
+  } catch (error) {
+    next(error);
+  }
+});
 
 //get a blog by id
 blogsRouter.get("/:blogId", (req, res, next) => {
-    try {
-        const blog = getBlogs()
-        const getBlogById = blog.find(b => b.id === req.params.blogId)
-        if(blog) {
-            res.send(getBlogById)
-        }else {
-            next(createHttpError(404, `Error has occured in getting the blog with this ID: ${req.params.blogId}`))
-        }
-        
-        
-        
-    } catch (error) {
-        next(error)
+  try {
+    const blog = getBlogs();
+    const getBlogById = blog.find((b) => b.id === req.params.blogId);
+    if (blog) {
+      res.send(getBlogById);
+    } else {
+      next(
+        createHttpError(
+          404,
+          `Error has occured in getting the blog with this ID: ${req.params.blogId}`
+        )
+      );
     }
-})
+  } catch (error) {
+    next(error);
+  }
+});
 
 // delete blog
 blogsRouter.delete("/:blogId", (req, res, next) => {
-    try {
-        const blogs = getBlogs()
-        const remainingBlogs = blogs.filter(b => b.id !== req.params.blogId)
-        writeBlogs(remainingBlogs)
+  try {
+    const blogs = getBlogs();
+    const remainingBlogs = blogs.filter((b) => b.id !== req.params.blogId);
+    writeBlogs(remainingBlogs);
 
-        res.status(204).send()
-    } catch (error) {
-        next(error)
-    }
-})
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+});
 
 // edit blog
 blogsRouter.put("/:blogId", (req, res, next) => {
-    try {
-        const blogs = getBlogs()
-        const index = blogs.findIndex(b => b.id === req.params.blogId)
-        const blogToEdit = blogs[index]
-        const editedFields = req.body
+  try {
+    const blogs = getBlogs();
+    const index = blogs.findIndex((b) => b.id === req.params.blogId);
+    const blogToEdit = blogs[index];
+    const editedFields = req.body;
 
-        const editedBlog = { ...blogToEdit, editedFields, updated: new Date() }
-        blogs[index] = editedBlog
-        writeBlogs(blogs)
+    const editedBlog = { ...blogToEdit, editedFields, updated: new Date() };
+    blogs[index] = editedBlog;
+    writeBlogs(blogs);
 
-        res.send(editedBlog)
-    } catch (error) {
-        next(error)
-    }
-})
+    res.send(editedBlog);
+  } catch (error) {
+    next(error);
+  }
+});
 
-
-
-export default blogsRouter
+export default blogsRouter;
