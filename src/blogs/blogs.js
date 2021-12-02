@@ -33,11 +33,11 @@ blogsRouter.post("/", blogsValidation, (req, res, next) => {
       );
     } else {
       const newBlog = { ...req.body, ceatedAt: new Date(), id: uniqid() };
-      const blog = getBlogs();
+      const blogs = getBlogs();
 
-      blog.push(newBlog);
-      writeBlogs(blog);
-      res.status(201).send({ id: newBlog.id });
+      blogs.push(newBlog);
+      writeBlogs(blogs);
+      res.status(201).send({ id: newBlog.id, newBlog });
     }
   } catch (error) {
     next(error);
@@ -47,8 +47,8 @@ blogsRouter.post("/", blogsValidation, (req, res, next) => {
 // get blogs
 blogsRouter.get("/", (req, res, next) => {
   try {
-    const blog = getBlogs();
-    res.send({ blog });
+    const blogs = getBlogs();
+    res.send({ blogs });
   } catch (error) {
     next(error);
   }
@@ -59,7 +59,7 @@ blogsRouter.get("/:blogId", (req, res, next) => {
   try {
     const blog = getBlogs();
     const getBlogById = blog.find((b) => b.id === req.params.blogId);
-    if (blog) {
+    if (getBlogById) {
       res.send(getBlogById);
     } else {
       next(
