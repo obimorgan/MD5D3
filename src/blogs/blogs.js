@@ -37,7 +37,7 @@ blogsRouter.post("/", blogsValidation, async (req, res, next) => {
       const blogs = await getBlogs();
 
       blogs.push(newBlog);
-      writeBlogs(blogs);
+      await writeBlogs(blogs);
       res.status(201).send({ id: newBlog.id, newBlog });
     }
   } catch (error) {
@@ -80,7 +80,7 @@ blogsRouter.delete("/:blogId", async(req, res, next) => {
   try {
     const blogs = await getBlogs();
     const remainingBlogs = blogs.filter((b) => b.id !== req.params.blogId);
-    writeBlogs(remainingBlogs);
+    await writeBlogs(remainingBlogs);
 
     res.status(204).send();
   } catch (error) {
@@ -98,7 +98,7 @@ blogsRouter.put("/:blogId", async(req, res, next) => {
 
     const editedBlog = { ...blogToEdit, editedFields, updated: new Date() };
     blogs[index] = editedBlog;
-    writeBlogs(blogs);
+    await writeBlogs(blogs);
 
     res.send(editedBlog);
   } catch (error) {

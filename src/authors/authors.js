@@ -8,6 +8,7 @@ import uniqid from "uniqid";
 import createHttpError from "http-errors";
 import { validationResult } from "express-validator";
 import { authorsValidation } from "./authorsValidation.js";
+import { getAuthors, writeAuthors } from "../lib/fs-tools.js";
 
 const authorsRouter = express.Router();
 
@@ -20,11 +21,10 @@ const authorsRouter = express.Router();
 // const writeauthors = (content) =>
 //   fs.writeFileSync(authorsJSONPath, JSON.stringify(content));
 
-//Post a blog
-authorsRouter.post("/", authorsValidation, (req, res, next) => {
+//Post a new author
+authorsRouter.post("/", authorsValidation, async (req, res, next) => {
   try {
     const errorsList = validationResult(req);
-
     if (!errorsList.isEmpty()) {
       next(
         createHttpError(400, "Error occured in the request body", {
@@ -33,10 +33,10 @@ authorsRouter.post("/", authorsValidation, (req, res, next) => {
       );
     } else {
       const newAuthor = { ...req.body, ceatedAt: new Date(), id: uniqid() };
-      const authors = getAuthors();
+      const authors = await getAuthors();
 
       authors.push(newAuthor);
-      writeAuthors(authors);
+      await writeAuthors(authors);
       res.status(201).send({ id: newAuthor.id, newAuthor });
     }
   } catch (error) {
@@ -44,21 +44,23 @@ authorsRouter.post("/", authorsValidation, (req, res, next) => {
   }
 });
 
-// get blogs
-authorsRouter.get("/", (req, res, next) => {
+// get authors
+authorsRouter.get("/", async (req, res, next) => {
   try {
-    const authors = getAuthors();
+    const authors = await getAuthors();
+    console.log(authors)
+    console.log("authors")
     res.send({ authors });
   } catch (error) {
     next(error);
   }
 });
 
-//get a blog by id
-authorsRouter.get("/:authorId", (req, res, next) => {
+//get an author by id
+authorsRouter.get("/:authorId", async(req, res, next) => {
   try {
-    const author = getAuthors();
-    const getAuthorById = author.find((b) => b.id === req.params.authorId);
+    const author = await getAuthors();
+    const getAuthorById = author.find((a) => a.id === req.params.authorId);
     if (getAuthorById) {
       res.send(getAuthorById);
     } else {
@@ -74,12 +76,12 @@ authorsRouter.get("/:authorId", (req, res, next) => {
   }
 });
 
-// delete blog
-authorsRouter.delete("/:authorId", (req, res, next) => {
+// delete author
+authorsRouter.delete("/:authorId", async (req, res, next) => {
   try {
-    const authors = getAuthors();
-    const remainingAuthors = authors.filter((b) => b.id !== req.params.authorId);
-    writeauthors(remainingAuthors);
+    const authors = await getAuthors();
+    const remainingAuthors = authors.filter((a) => a.id !== req.params.authorId);
+    await writeAuthors(remainingAuthors);
 
     res.status(204).send();
   } catch (error) {
@@ -88,18 +90,18 @@ authorsRouter.delete("/:authorId", (req, res, next) => {
 });
 
 // edit blog
-authorsRouter.put("/:authorId", (req, res, next) => {
+authorsRouter.put("/:authorId", async (req, res, next) => {
   try {
-    const authors = getAuthors();
-    const index = authors.findIndex((b) => b.id === req.params.authorId);
-    const blogToEdit = authors[index];
+    const authors = await getAuthors();
+    const index = authors.findIndex((a) => a.id === req.params.authorId);
+    const authorToEdit = authors[index];
     const editedFields = req.body;
 
-    const editedBlog = { ...blogToEdit, editedFields, updated: new Date() };
-    authors[index] = editedBlog;
-    writeauthors(authors);
+    const editedAuthor = { ...authorToEdit, editedFields, updated: new Date() };
+    authors[index] = editedAuthor;
+    await writeAuthors(authors);
 
-    res.send(editedBlog);
+    res.send(editedAuthor);
   } catch (error) {
     next(error);
   }
