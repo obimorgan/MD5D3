@@ -1,27 +1,28 @@
 /** @format */
 
 import express from "express";
-import fs from "fs";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+// import fs from "fs";
+// import { fileURLToPath } from "url";
+// import { dirname, join } from "path";
 import uniqid from "uniqid";
 import createHttpError from "http-errors";
 import { validationResult } from "express-validator";
 import { blogsValidation } from "./blogsValidation.js";
+import { getBlogs, writeBlogs } from "../lib/fs-tools.js";
 
 const blogsRouter = express.Router();
 
-const blogsJSONPath = join(
-  dirname(fileURLToPath(import.meta.url)),
-  "blogs.json"
-);
+// const blogsJSONPath = join(
+//   dirname(fileURLToPath(import.meta.url)),
+//   "blogs.json"
+// );
 
-const getBlogs = () => JSON.parse(fs.readFileSync(blogsJSONPath));
-const writeBlogs = (content) =>
-  fs.writeFileSync(blogsJSONPath, JSON.stringify(content));
+// const getBlogs = () => JSON.parse(fs.readFileSync(blogsJSONPath));
+// const writeBlogs = (content) =>
+//   fs.writeFileSync(blogsJSONPath, JSON.stringify(content));
 
 //Post a blog
-blogsRouter.post("/", blogsValidation, (req, res, next) => {
+blogsRouter.post("/", blogsValidation, async (req, res, next) => {
   try {
     const errorsList = validationResult(req);
 
@@ -33,7 +34,7 @@ blogsRouter.post("/", blogsValidation, (req, res, next) => {
       );
     } else {
       const newBlog = { ...req.body, ceatedAt: new Date(), id: uniqid() };
-      const blogs = getBlogs();
+      const blogs = await getBlogs();
 
       blogs.push(newBlog);
       writeBlogs(blogs);
@@ -45,9 +46,9 @@ blogsRouter.post("/", blogsValidation, (req, res, next) => {
 });
 
 // get blogs
-blogsRouter.get("/", (req, res, next) => {
+blogsRouter.get("/", async (req, res, next) => {
   try {
-    const blogs = getBlogs();
+    const blogs = await getBlogs();
     res.send({ blogs });
   } catch (error) {
     next(error);
@@ -55,9 +56,9 @@ blogsRouter.get("/", (req, res, next) => {
 });
 
 //get a blog by id
-blogsRouter.get("/:blogId", (req, res, next) => {
+blogsRouter.get("/:blogId", async (req, res, next) => {
   try {
-    const blog = getBlogs();
+    const blog = await getBlogs();
     const getBlogById = blog.find((b) => b.id === req.params.blogId);
     if (getBlogById) {
       res.send(getBlogById);
@@ -75,9 +76,9 @@ blogsRouter.get("/:blogId", (req, res, next) => {
 });
 
 // delete blog
-blogsRouter.delete("/:blogId", (req, res, next) => {
+blogsRouter.delete("/:blogId", async(req, res, next) => {
   try {
-    const blogs = getBlogs();
+    const blogs = await getBlogs();
     const remainingBlogs = blogs.filter((b) => b.id !== req.params.blogId);
     writeBlogs(remainingBlogs);
 
@@ -88,9 +89,9 @@ blogsRouter.delete("/:blogId", (req, res, next) => {
 });
 
 // edit blog
-blogsRouter.put("/:blogId", (req, res, next) => {
+blogsRouter.put("/:blogId", async(req, res, next) => {
   try {
-    const blogs = getBlogs();
+    const blogs = await getBlogs();
     const index = blogs.findIndex((b) => b.id === req.params.blogId);
     const blogToEdit = blogs[index];
     const editedFields = req.body;
