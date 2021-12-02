@@ -1,5 +1,4 @@
 import fs from "fs-extra"
-import path from "path"
 import {fileURLToPath} from "url"
 import { dirname, join } from "path"
 
@@ -13,3 +12,6 @@ const blogsJsonPath = join(dataFolderPath, "blogs.json")
 
 export const getBlogs = () => readJSON(blogsJsonPath)
 export const getAuthors = () => readJSON(authorsJsonPath)
+export const writeBlogs = () => content => writeJSON(blogsJsonPath, content)
+export const writeAuthors = () => content => writeJSON(authorsJsonPath, content)
+export const saveUsersAvatar = (fileName, contentAsABuffer) => writeFile(join(authorsPublicFolderPath, fileName), contentAsABuffer)
