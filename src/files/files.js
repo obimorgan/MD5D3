@@ -6,6 +6,16 @@ import { saveAuthorsAvatar } from "../lib/fs-tools.js"
 
 const filesRouter = express.Router()
 
+// export const uploader = multer({
+//     fileFilter: (req, file, multerNext) => {
+//         if (file.mimetype !== "image/jpg") {
+//             multerNext(createHttpError(400, "You can only upload images"))
+//         }else {
+//             multer(null, true)
+//         }
+//     }
+// }).single("avatarImg")
+
 filesRouter.post("/uploadImg", multer().single("avatarPic"), async (req, res, next) => {
     try {
         console.log("FIle:", req.file)
@@ -27,15 +37,7 @@ filesRouter.post("/uploadMultiple", multer().array("profilePics"), async(req, re
         
     }
 })
-// const uploader = multer({
-//     fileFilter: (req, file, multerNext) => {
-//         if (file.mimetype !== "image/jpg") {
-//             multerNext(createHttpError(400, "You can only upload images"))
-//         }else {
-//             multer(null, true)
-//         }
-//     }
-// }).single("avatarImg")
+
 
 // filesRouter.post("/uploadImg", uploader, async (req, res, next) => {
 //     try {

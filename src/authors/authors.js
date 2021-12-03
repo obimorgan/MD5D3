@@ -8,20 +8,12 @@ import uniqid from "uniqid";
 import createHttpError from "http-errors";
 import { validationResult } from "express-validator";
 import { authorsValidation } from "./authorsValidation.js";
-import { getAuthors, writeAuthors } from "../lib/fs-tools.js";
+import { getAuthors, writeAuthors, saveAuthorsAvatar } from "../lib/fs-tools.js";
+import multer from "multer"
+
 
 const authorsRouter = express.Router();
 
-// const authorsJSONPath = join(
-//   dirname(fileURLToPath(import.meta.url)),
-//   "authors.json"
-// );
-
-// const getauthors = () => JSON.parse(fs.readFileSync(authorsJSONPath));
-// const writeauthors = (content) =>
-//   fs.writeFileSync(authorsJSONPath, JSON.stringify(content));
-
-//Post a new author
 authorsRouter.post("/", authorsValidation, async (req, res, next) => {
   try {
     const errorsList = validationResult(req);
@@ -93,6 +85,41 @@ authorsRouter.delete("/:authorId", async (req, res, next) => {
 // edit blog
 authorsRouter.put("/:authorId", async (req, res, next) => {
   try {
+    const authors = await getAuthors();
+    const index = authors.findIndex((a) => a.id === req.params.authorId);
+    const authorToEdit = authors[index];
+    const editedFields = req.body;
+
+    const editedAuthor = { ...authorToEdit, editedFields, updated: new Date() };
+    authors[index] = editedAuthor;
+    await writeAuthors(authors);
+
+    res.send(editedAuthor);
+  } catch (error) {
+    next(error);
+  }
+});
+
+authorsRouter.put("/:authorId/", async (req, res, next) => {
+  try {
+    const authors = await getAuthors();
+    const index = authors.findIndex((a) => a.id === req.params.authorId);
+    const authorToEdit = authors[index];
+    const editedFields = req.body;
+
+    const editedAuthor = { ...authorToEdit, editedFields, updated: new Date() };
+    authors[index] = editedAuthor;
+    await writeAuthors(authors);
+
+    res.send(editedAuthor);
+  } catch (error) {
+    next(error);
+  }
+});
+
+authorsRouter.put("/:authorId/saveAuthorsAvatar", multer().single("avatartImg"),  async (req, res, next) => {
+  try {
+
     const authors = await getAuthors();
     const index = authors.findIndex((a) => a.id === req.params.authorId);
     const authorToEdit = authors[index];
