@@ -94,9 +94,9 @@ blogsRouter.put("/:blogId", async(req, res, next) => {
     const blogs = await getBlogs();
     const index = blogs.findIndex((b) => b.id === req.params.blogId);
     const blogToEdit = blogs[index];
-    const editedFields = req.body;
+    // const editedFields = req.body;
 
-    const editedBlog = { ...blogToEdit, editedFields, updated: new Date() };
+    const editedBlog = { ...blogToEdit, updated: new Date() };
     blogs[index] = editedBlog;
     await writeBlogs(blogs);
 

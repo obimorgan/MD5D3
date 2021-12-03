@@ -33,11 +33,12 @@ authorsRouter.post("/", authorsValidation, async (req, res, next) => {
       );
     } else {
       const newAuthor = { ...req.body, ceatedAt: new Date(), id: uniqid() };
+      console.log(newAuthor)
       const authors = await getAuthors();
 
       authors.push(newAuthor);
       await writeAuthors(authors);
-      res.status(201).send({ id: newAuthor.id, newAuthor });
+      res.status(201).send({ id: newAuthor.id });
     }
   } catch (error) {
     next(error);
@@ -59,15 +60,15 @@ authorsRouter.get("/", async (req, res, next) => {
 //get an author by id
 authorsRouter.get("/:authorId", async(req, res, next) => {
   try {
-    const author = await getAuthors();
-    const getAuthorById = author.find((a) => a.id === req.params.authorId);
+    const authors = await getAuthors();
+    const getAuthorById = authors.find((a) => a.id === req.params.authorId);
     if (getAuthorById) {
       res.send(getAuthorById);
     } else {
       next(
         createHttpError(
           404,
-          `Error has occured in getting the blog with this ID: ${req.params.authorId}`
+          `Error has occured in getting the author with this ID: ${req.params.authorId}`
         )
       );
     }
